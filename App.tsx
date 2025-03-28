@@ -2,13 +2,11 @@ import { StatusBar } from 'expo-status-bar';
 import {
   StyleSheet,
   Text,
-  View,
-  TextInput,
-  Button,
   Pressable,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import CustomInput from './src/components/CustomInput';
 
 export default function App() {
   return (
@@ -18,15 +16,15 @@ export default function App() {
     >
       <Text style={styles.title}>Sign in</Text>
 
-      <TextInput
+      <CustomInput
         placeholder='Email'
-        style={styles.input}
         autoFocus
         autoCapitalize='none'
         keyboardType='email-address'
         autoComplete='email'
       />
-      <TextInput placeholder='Password' style={styles.input} secureTextEntry />
+
+      <CustomInput placeholder='Password' secureTextEntry />
 
       <Pressable
         onPress={() => {
@@ -53,12 +51,6 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '600',
-  },
-  input: {
-    borderWidth: 1,
-    padding: 10,
-    borderRadius: 5,
-    borderColor: '#ccc',
   },
 
   button: {
