@@ -12,7 +12,8 @@ import { Link } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useAuth } from '@/providers/AuthProvider';
+
+import { useSignIn } from '@clerk/clerk-expo';
 
 const signInSchema = z.object({
   email: z.string({ message: 'Email is required' }).email('Invalid email'),
@@ -28,13 +29,29 @@ export default function SignInScreen() {
     resolver: zodResolver(signInSchema),
   });
 
-  const { signIn } = useAuth();
+  const { signIn, isLoaded, setActive } = useSignIn();
 
-  const onSignIn = (data: SignInFields) => {
-    // manual validation
+  const onSignIn = async (data: SignInFields) => {
+    if (!isLoaded) return;
+
+    try {
+      const signInAttempt = await signIn.create({
+        identifier: data.email,
+        password: data.password,
+      });
+
+      if (signInAttempt.status === 'complete') {
+        setActive({ session: signInAttempt.createdSessionId });
+      } else {
+        console.log('Sign in failed');
+      }
+
+      console.log('Sign in attempt: ', signInAttempt);
+    } catch (err) {
+      console.log('Sign in error: ', err);
+    }
 
     console.log('Sign in: ', data.email, data.password);
-    signIn();
   };
 
   return (

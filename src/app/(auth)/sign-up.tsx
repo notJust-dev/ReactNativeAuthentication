@@ -13,6 +13,8 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'expo-router';
 
+import { useSignUp } from '@clerk/clerk-expo';
+
 const signUpSchema = z.object({
   email: z.string({ message: 'Email is required' }).email('Invalid email'),
   password: z
@@ -27,8 +29,19 @@ export default function SignUpScreen() {
     resolver: zodResolver(signUpSchema),
   });
 
-  const onSignUp = (data: SignUpFields) => {
-    // manual validation
+  const { signUp, isLoaded } = useSignUp();
+
+  const onSignUp = async (data: SignUpFields) => {
+    if (!isLoaded) return;
+    
+    try {
+      await signUp.create({
+        emailAddress: data.email,
+        password: data.password,
+      });
+    } catch (error) {
+      console.log('Sign up error: ', error);
+    }
 
     console.log('Sign up: ', data.email, data.password);
   };
