@@ -23,7 +23,7 @@ const signInSchema = z.object({
 type SignInFields = z.infer<typeof signInSchema>;
 
 export default function App() {
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit } = useForm<SignInFields>({
     resolver: zodResolver(signInSchema),
   });
 
