@@ -15,6 +15,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { isClerkAPIResponseError, useSignIn } from '@clerk/clerk-expo';
+import SignInWith from '@/components/SignInWith';
 
 const signInSchema = z.object({
   email: z.string({ message: 'Email is required' }).email('Invalid email'),
@@ -118,6 +119,8 @@ export default function SignInScreen() {
       <Link href='/sign-up' style={styles.link}>
         Don't have an account? Sign up
       </Link>
+
+      <SignInWith />
     </KeyboardAvoidingView>
   );
 }
