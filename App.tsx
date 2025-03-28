@@ -6,11 +6,16 @@ import {
   TextInput,
   Button,
   Pressable,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 
 export default function App() {
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       <Text style={styles.title}>Sign in</Text>
 
       <TextInput placeholder='Email' style={styles.input} />
@@ -26,7 +31,7 @@ export default function App() {
       </Pressable>
 
       <StatusBar style='auto' />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -34,7 +39,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     padding: 20,
     gap: 20,
   },
