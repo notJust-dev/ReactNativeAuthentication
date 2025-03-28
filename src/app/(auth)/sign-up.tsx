@@ -13,7 +13,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, router } from 'expo-router';
 
-import { useSignUp } from '@clerk/clerk-expo';
+import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
 
 const signUpSchema = z.object({
   email: z.string({ message: 'Email is required' }).email('Invalid email'),
@@ -24,8 +24,24 @@ const signUpSchema = z.object({
 
 type SignUpFields = z.infer<typeof signUpSchema>;
 
+const mapClerkErrorToFormField = (error: any) => {
+  switch (error.meta?.paramName) {
+    case 'email_address':
+      return 'email';
+    case 'password':
+      return 'password';
+    default:
+      return 'root';
+  }
+};
+
 export default function SignUpScreen() {
-  const { control, handleSubmit } = useForm<SignUpFields>({
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<SignUpFields>({
     resolver: zodResolver(signUpSchema),
   });
 
@@ -43,11 +59,21 @@ export default function SignUpScreen() {
       await signUp.prepareVerification({ strategy: 'email_code' });
 
       router.push('/verify');
-    } catch (error) {
-      console.log('Sign up error: ', error);
+    } catch (err) {
+      console.log('Sign up error: ', err);
+      if (isClerkAPIResponseError(err)) {
+        err.errors.forEach((error) => {
+          console.log('Error: ', JSON.stringify(error, null, 2));
+          const fieldName = mapClerkErrorToFormField(error);
+          console.log('Field name: ', fieldName);
+          setError(fieldName, {
+            message: error.longMessage,
+          });
+        });
+      } else {
+        setError('root', { message: 'Unknown error' });
+      }
     }
-
-    console.log('Sign up: ', data.email, data.password);
   };
 
   return (
@@ -74,6 +100,9 @@ export default function SignUpScreen() {
           placeholder='Password'
           secureTextEntry
         />
+        {errors.root && (
+          <Text style={{ color: 'crimson' }}>{errors.root.message}</Text>
+        )}
       </View>
 
       <CustomButton text='Sign up' onPress={handleSubmit(onSignUp)} />

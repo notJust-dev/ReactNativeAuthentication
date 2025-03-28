@@ -13,7 +13,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Link } from 'expo-router';
 
-import { useSignUp } from '@clerk/clerk-expo';
+import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
 
 const verifySchema = z.object({
   code: z.string({ message: 'Code is required' }).length(6, 'Invalid code'),
@@ -21,8 +21,22 @@ const verifySchema = z.object({
 
 type VerifyFields = z.infer<typeof verifySchema>;
 
+const mapClerkErrorToFormField = (error: any) => {
+  switch (error.meta?.paramName) {
+    case 'code':
+      return 'code';
+    default:
+      return 'root';
+  }
+};
+
 export default function VerifyScreen() {
-  const { control, handleSubmit } = useForm<VerifyFields>({
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<VerifyFields>({
     resolver: zodResolver(verifySchema),
   });
 
@@ -41,9 +55,19 @@ export default function VerifyScreen() {
       } else {
         console.log('Verification failed');
         console.log(signUpAttempt);
+        setError('root', { message: 'Could not complete the sign up' });
       }
     } catch (err) {
-      console.log('Verify error: ', err);
+      if (isClerkAPIResponseError(err)) {
+        err.errors.forEach((error) => {
+          const fieldName = mapClerkErrorToFormField(error);
+          setError(fieldName, {
+            message: error.longMessage,
+          });
+        });
+      } else {
+        setError('root', { message: 'Unknown error' });
+      }
     }
   };
 

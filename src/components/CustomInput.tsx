@@ -31,9 +31,17 @@ export default function CustomInput<T extends FieldValues>({
             value={value}
             onChangeText={onChange}
             onBlur={onBlur}
-            style={[styles.input, props.style]}
+            style={[
+              styles.input,
+              props.style,
+              { borderColor: error ? 'crimson' : 'gray' },
+            ]}
           />
-          <Text style={styles.error}>{error?.message}</Text>
+          {error ? (
+            <Text style={styles.error}>{error.message}</Text>
+          ) : (
+            <View style={{ height: 18 }} />
+          )}
         </View>
       )}
     />
@@ -52,5 +60,6 @@ const styles = StyleSheet.create({
   },
   error: {
     color: 'crimson',
+    minHeight: 18,
   },
 });

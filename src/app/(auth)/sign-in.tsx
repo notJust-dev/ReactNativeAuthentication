@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   View,
+  Alert,
 } from 'react-native';
 import CustomInput from '@/components/CustomInput';
 import CustomButton from '@/components/CustomButton';
@@ -13,7 +14,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-import { useSignIn } from '@clerk/clerk-expo';
+import { isClerkAPIResponseError, useSignIn } from '@clerk/clerk-expo';
 
 const signInSchema = z.object({
   email: z.string({ message: 'Email is required' }).email('Invalid email'),
@@ -24,10 +25,28 @@ const signInSchema = z.object({
 
 type SignInFields = z.infer<typeof signInSchema>;
 
+const mapClerkErrorToFormField = (error: any) => {
+  switch (error.meta?.paramName) {
+    case 'identifier':
+      return 'email';
+    case 'password':
+      return 'password';
+    default:
+      return 'root';
+  }
+};
+
 export default function SignInScreen() {
-  const { control, handleSubmit } = useForm<SignInFields>({
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+  } = useForm<SignInFields>({
     resolver: zodResolver(signInSchema),
   });
+
+  console.log('Errors: ', JSON.stringify(errors, null, 2));
 
   const { signIn, isLoaded, setActive } = useSignIn();
 
@@ -44,11 +63,21 @@ export default function SignInScreen() {
         setActive({ session: signInAttempt.createdSessionId });
       } else {
         console.log('Sign in failed');
+        setError('root', { message: 'Sign in could not be completed' });
       }
-
-      console.log('Sign in attempt: ', signInAttempt);
     } catch (err) {
-      console.log('Sign in error: ', err);
+      console.log('Sign in error: ', JSON.stringify(err, null, 2));
+
+      if (isClerkAPIResponseError(err)) {
+        err.errors.forEach((error) => {
+          const fieldName = mapClerkErrorToFormField(error);
+          setError(fieldName, {
+            message: error.longMessage,
+          });
+        });
+      } else {
+        setError('root', { message: 'Unknown error' });
+      }
     }
 
     console.log('Sign in: ', data.email, data.password);
@@ -78,6 +107,10 @@ export default function SignInScreen() {
           placeholder='Password'
           secureTextEntry
         />
+
+        {errors.root && (
+          <Text style={{ color: 'crimson' }}>{errors.root.message}</Text>
+        )}
       </View>
 
       <CustomButton text='Sign in' onPress={handleSubmit(onSignIn)} />
