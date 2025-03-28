@@ -120,7 +120,11 @@ export default function SignInScreen() {
         Don't have an account? Sign up
       </Link>
 
-      <SignInWith />
+      <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 'auto' }}>
+        <SignInWith strategy='oauth_google' />
+        <SignInWith strategy='oauth_facebook' />
+        <SignInWith strategy='oauth_apple' />
+      </View>
     </KeyboardAvoidingView>
   );
 }

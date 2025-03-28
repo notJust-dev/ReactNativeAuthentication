@@ -4,6 +4,11 @@ import * as AuthSession from 'expo-auth-session';
 import { useEffect, useCallback } from 'react';
 import { useSSO } from '@clerk/clerk-expo';
 
+import googleButton from '@assets/social-providers/google.png';
+import facebookButton from '@assets/social-providers/facebook.png';
+import appleButton from '@assets/social-providers/apple.png';
+import { Pressable, Image } from 'react-native';
+
 export const useWarmUpBrowser = () => {
   useEffect(() => {
     // Preloads the browser for Android devices to reduce authentication load time
@@ -19,7 +24,17 @@ export const useWarmUpBrowser = () => {
 // Handle any pending authentication sessions
 WebBrowser.maybeCompleteAuthSession();
 
-export default function SignInWith() {
+type SignInWithProps = {
+  strategy: 'oauth_google' | 'oauth_apple' | 'oauth_facebook';
+};
+
+const strategyIcons = {
+  oauth_google: googleButton,
+  oauth_apple: appleButton,
+  oauth_facebook: facebookButton,
+};
+
+export default function SignInWith({ strategy }: SignInWithProps) {
   useWarmUpBrowser();
 
   // Use the `useSSO()` hook to access the `startSSOFlow()` method
@@ -30,7 +45,7 @@ export default function SignInWith() {
       // Start the authentication process by calling `startSSOFlow()`
       const { createdSessionId, setActive, signIn, signUp } =
         await startSSOFlow({
-          strategy: 'oauth_google',
+          strategy,
           // For web, defaults to current path
           // For native, you must pass a scheme, like AuthSession.makeRedirectUri({ scheme, path })
           // For more info, see https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions
@@ -53,5 +68,13 @@ export default function SignInWith() {
     }
   }, []);
 
-  return <CustomButton text='Sign in with Google' onPress={onPress} />;
+  return (
+    <Pressable onPress={onPress}>
+      <Image
+        source={strategyIcons[strategy]}
+        style={{ width: 62, height: 62 }}
+        resizeMode='contain'
+      />
+    </Pressable>
+  );
 }

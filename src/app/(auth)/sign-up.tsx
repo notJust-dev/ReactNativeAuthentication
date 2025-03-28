@@ -14,6 +14,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, router } from 'expo-router';
 
 import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo';
+import SignInWith from '@/components/SignInWith';
 
 const signUpSchema = z.object({
   email: z.string({ message: 'Email is required' }).email('Invalid email'),
@@ -109,6 +110,12 @@ export default function SignUpScreen() {
       <Link href='/sign-in' style={styles.link}>
         Already have an account? Sign in
       </Link>
+
+      <View style={{ flexDirection: 'row', gap: 10, marginHorizontal: 'auto' }}>
+        <SignInWith strategy='oauth_google' />
+        <SignInWith strategy='oauth_facebook' />
+        <SignInWith strategy='oauth_apple' />
+      </View>
     </KeyboardAvoidingView>
   );
 }
