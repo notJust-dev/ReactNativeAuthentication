@@ -18,7 +18,14 @@ export default function App() {
     >
       <Text style={styles.title}>Sign in</Text>
 
-      <TextInput placeholder='Email' style={styles.input} />
+      <TextInput
+        placeholder='Email'
+        style={styles.input}
+        autoFocus
+        autoCapitalize='none'
+        keyboardType='email-address'
+        autoComplete='email'
+      />
       <TextInput placeholder='Password' style={styles.input} secureTextEntry />
 
       <Pressable
@@ -39,7 +46,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     padding: 20,
     gap: 20,
   },
